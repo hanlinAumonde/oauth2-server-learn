@@ -1,0 +1,18 @@
+server:
+  port: 53021
+
+spring:
+  application:
+    name: resource-server
+  datasource:
+    url: jdbc:postgresql://localhost:5432/oauth2_resource
+    username: postgres
+    password: 721215
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:53020
