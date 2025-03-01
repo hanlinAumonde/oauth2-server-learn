@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS public.oauth2_registered_client;
 DROP TABLE IF EXISTS public.oauth2_authorization_consent;
 DROP TABLE IF EXISTS public.oauth2_authorization;
+DROP TABLE IF EXISTS public.users;
 
 CREATE TABLE IF NOT EXISTS public.oauth2_registered_client (
 	id varchar(100) NOT NULL,
@@ -81,13 +82,13 @@ INSERT INTO public.oauth2_registered_client (
 	'3eacac0e-0de9-4727-9a64-6bdd4be2ee1f',
 	'oidc-client-test',
 	CURRENT_TIMESTAMP,
-	'{noop}secret',
+	'$2a$10$.J0Rfg7y2Mu8AN8Dk2vL.eBFa9NGbOYCPOAFEw.QhgGLVXjO7eFDC',
 	NULL,
 	'Oidc-Client-Test',
-	'clint_secret_basic',
+	'client_secret_basic',
 	'authorization_code,refresh_token',
-	'http://www.baidu.com',
-	'http://www.baidu.com',
+	'http://spring-oauth2-client:53022/login/oauth2/code/messaging-client-oidc',
+	'http://spring-oauth2-client:53022/login/oauth2/code/messaging-client-oidc',
 	'openid,profile',
 	'{
 		"@class":"java.util.Collections$UnmodifiableMap",
@@ -113,6 +114,17 @@ INSERT INTO public.oauth2_registered_client (
 		"settings.token.device-code-time-to-live":
 			["java.time.Duration",300.000000000]
 	}'
+);
+
+CREATE TABLE public.users (
+	id bigint NOT NULL,
+	description varchar(255) NOT NULL,
+	email varchar(255) NOT NULL,
+	firstname varchar(255) NOT NULL,
+	lastname varchar(255) NOT NULL,
+	password varchar(255) NOT NULL,
+	status int NOT NULL,
+	CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
 INSERT INTO public.users (
