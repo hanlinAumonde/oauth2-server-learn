@@ -12,6 +12,7 @@
     <modules>
         <module>auth-server</module>
         <module>resource-server</module>
+        <module>oauth-simple-client</module>
     </modules>
 
     <parent>
