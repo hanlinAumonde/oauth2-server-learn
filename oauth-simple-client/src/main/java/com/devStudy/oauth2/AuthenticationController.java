@@ -1,6 +1,8 @@
 package com.devStudy.oauth2;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,8 +19,10 @@ public class AuthenticationController {
     }
 
 	@GetMapping("/secure")
-	public String secure(@AuthenticationPrincipal OidcUser principal, Model model) {
+	public String secure(@AuthenticationPrincipal OidcUser principal, Model model,
+						 @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient) {
 	    model.addAttribute("principal", principal);
+		model.addAttribute("authorizedClient", authorizedClient);
 	    return "secure";
 	}
 }

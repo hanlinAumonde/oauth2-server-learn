@@ -22,10 +22,10 @@ public class SecurityConfig {
             )
             .oauth2Login(oauth2 -> oauth2
             		.loginPage("/home")
-            		.defaultSuccessUrl("/secure", true))
+					.defaultSuccessUrl("/secure", true))
 			.logout(logout -> logout
 						.logoutSuccessUrl("/home"))
-            //.oidcLogout(Customizer.withDefaults())
+            .oidcLogout(Customizer.withDefaults())
         .build();
     }
 

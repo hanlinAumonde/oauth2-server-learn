@@ -34,7 +34,10 @@
     <h1>OIDC认证成功!</h1>
     
     <h2>ID Token信息:</h2>
-    <pre th:text="${principal.getIdToken().getClaims()}"></pre>
+    <pre th:text="${principal.getIdToken().getTokenValue()}"></pre>
+
+    <h2>Access Token信息</h2>
+    <pre th:text="${authorizedClient.getAccessToken().getTokenValue()}"></pre>
     
     <h2>用户信息:</h2>
     <pre th:text="${principal.getUserInfo()}"></pre>
@@ -42,7 +45,7 @@
     <h2>所有属性:</h2>
     <pre th:text="${principal.getAttributes()}"></pre>
     
-    <form th:action=@{/logout} method="post">
+    <form th:action="@{/logout}" method="post">
         <button class="btn btn-primary" type="submit">Logout</button>
     </form>
 </body>
