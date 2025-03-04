@@ -5,7 +5,9 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
+import java.util.function.Function;
 
+import com.devStudy.oauth2.Service.CustomOidcUserInfoService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -16,6 +18,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
+import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.JdbcOAuth2AuthorizationService;
@@ -25,7 +29,10 @@ import org.springframework.security.oauth2.server.authorization.client.JdbcRegis
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.server.authorization.oidc.authentication.OidcUserInfoAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -41,10 +48,17 @@ import com.nimbusds.jose.proc.SecurityContext;
 public class SecurityConfig {	
 	@Bean
 	@Order(1)
-	SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http, CustomOidcUserInfoService customOidcUserInfoService) throws Exception {
 		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class).oidc(Customizer.withDefaults());
-		
+		Function<OidcUserInfoAuthenticationContext, OidcUserInfo> userInfoMapper = context ->
+			customOidcUserInfoService.loadUserInfo(context.getAuthorization().getPrincipalName());
+
+		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)//.oidc(Customizer.withDefaults());
+				.oidc(oidc -> oidc
+						.userInfoEndpoint(userInfo -> userInfo
+								.userInfoMapper(userInfoMapper))
+				);
+
 		return http
 			.exceptionHandling(ex -> ex
 					.defaultAuthenticationEntryPointFor(
@@ -66,13 +80,23 @@ public class SecurityConfig {
 	
 	@Bean
     PasswordEncoder passwordEncoder() {
-        //return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     	return new BCryptPasswordEncoder();
     }
 	
 	@Bean
 	RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
 		return new JdbcRegisteredClientRepository(jdbcTemplate);
+	}
+
+	@Bean
+	OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer(CustomOidcUserInfoService userInfoService){
+		return (context) -> {
+			if(OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())){
+				String username = context.getPrincipal().getName();
+				context.getClaims().claims(claims ->
+						claims.putAll(userInfoService.loadUserInfoForIDToken(username)));
+			}
+		};
 	}
 	
 	@Bean

@@ -19,9 +19,9 @@ public class AuthenticationController {
     }
 
 	@GetMapping("/secure")
-	public String secure(@AuthenticationPrincipal OidcUser principal, Model model,
+	public String secure(@AuthenticationPrincipal OidcUser oidcUser, Model model,
 						 @RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient) {
-	    model.addAttribute("principal", principal);
+	    model.addAttribute("oidcUser", oidcUser);
 		model.addAttribute("authorizedClient", authorizedClient);
 	    return "secure";
 	}
